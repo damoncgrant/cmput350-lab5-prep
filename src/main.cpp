@@ -107,8 +107,8 @@ void render(sf::RenderWindow& window) {
     sf::CircleShape circle(CIRCLE_RADIUS);
     
     circle.setFillColor(sf::Color::Blue);
-    const float a = 0.f + 2.f * CIRCLE_RADIUS;
-    const float b = WINDOW_WIDTH - 2.f * CIRCLE_RADIUS;
+    const float a = 0.f + 0.1f * WINDOW_WIDTH + 2.f * CIRCLE_RADIUS;
+    const float b = WINDOW_WIDTH - 0.1f * WINDOW_WIDTH - 2.f * CIRCLE_RADIUS;
 
     t += direction / (ANIMATION_TIME * FPS_LIMIT);
 
@@ -120,7 +120,7 @@ void render(sf::RenderWindow& window) {
         direction = 1;
     }
 
-    circle.setPosition({tween(a, b, t), WINDOW_HEIGHT * 0.33f});
+    circle.setPosition({tween(a, b, t), WINDOW_HEIGHT * 0.3f});
     window.draw(circle);
     
 
@@ -128,6 +128,50 @@ void render(sf::RenderWindow& window) {
     // TODO: (Q3) Draw tween function graph with a dot
     // on the current portion of the curve
     // ====== ====== ======
+    // Axis lines
+    const float axisThickness = 5.0f;
+    const float xAxisLength = WINDOW_WIDTH * 0.5f;
+    const float yAxisLength = WINDOW_HEIGHT * 0.3f;
+    const float axisLeft = WINDOW_WIDTH * 0.25f;
+    const float axisBottom = WINDOW_HEIGHT * 0.9f;
+
+    sf::RectangleShape xAxis({xAxisLength, axisThickness});
+    xAxis.setFillColor(sf::Color::White);
+    xAxis.setPosition({axisLeft, axisBottom});
+    window.draw(xAxis);
+
+    sf::RectangleShape yAxis({axisThickness, yAxisLength});
+    yAxis.setOrigin({0.f, yAxisLength});
+    yAxis.setFillColor(sf::Color::White);
+    yAxis.setPosition({axisLeft, axisBottom});
+    window.draw(yAxis);
+
+    // Draw Line
+    // Help from https://www.sfml-dev.org/tutorials/3.1/graphics/vertex-array/#introduction
+    const int samples = 100;
+    sf::VertexArray lineCurve(sf::PrimitiveType::LineStrip, samples);
+
+    for (int i = 0; i < samples; ++i) {
+        float sampleT = static_cast<float>(i) / static_cast<float>(samples);
+        float tweenValue = tween(0.f, 1.f, sampleT);
+        float sampleX = axisLeft + sampleT * xAxisLength;
+        float sampleY = axisBottom - tweenValue * yAxisLength;
+
+        lineCurve[i].position = sf::Vector2f(sampleX, sampleY);
+        lineCurve[i].color = sf::Color::Cyan;
+    }
+    window.draw(lineCurve);
+
+    // Graph point
+    float pointX = axisLeft + t * xAxisLength;
+    float pointY = axisBottom - tween(0.f, 1.f, t) * yAxisLength;   // normalized tween for y-axis
+    sf::CircleShape point(CIRCLE_RADIUS / 2);
+    point.setOrigin({CIRCLE_RADIUS / 2, CIRCLE_RADIUS / 2});
+    point.setFillColor(sf::Color::Yellow);
+    point.setPosition({pointX, pointY});
+    window.draw(point);
+
+
     window.display();
 }
 
